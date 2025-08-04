@@ -1,5 +1,7 @@
 # Clickmouse
 
+[更新日志](./updates.md)
+
 ## 版权声明
 <a target="_blank" href="https://icons8.com/icon/13347/mouse">鼠标</a> 的图标 <a target="_blank" href="https://icons8.com">Icons8</a>
 
@@ -26,7 +28,9 @@
 5. 设置release版本 
 6. 设置架构(更多架构可以点击架构->配置管理器->活动解决方案平台->新建)
    
-7. 点击`本地windows调试器`编译，编译出来的文件通常在`<架构名>/release/clickMouse.exe`
+7. 按下`ctrl+shift+B`编译，编译出来的文件通常在`<架构名>/release/clickMouse.exe`
+> 仅需将`.exe`移出，`.dll`(或`.so`)是为开发人员开发鼠标宏使用的
+
 ![编译设置讲解](./readme_images/Build.png)
 ![设置架构](./readme_images/AddConstruct.png)
 8. 把程序移动到你想要放置的地方

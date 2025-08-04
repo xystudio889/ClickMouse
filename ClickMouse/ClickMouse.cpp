@@ -17,12 +17,137 @@ bool g_IsPaused = false;               // 暂停状态
 int g_CurrentClick = 0;                // 当前点击类型 0:无 1:左键 2:右键
 int g_Interval = 0;                    // 点击间隔
 WCHAR g_szInterval[100] = {  0 };         // 保存合法的间隔值文本
+HWND g_hTargetWnd = NULL;
+bool g_UseForceFocus = true; // 是否启用强制焦点
 
 // 此代码模块中包含的函数的前向声明:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+
+bool IsRunAsAdmin() {
+    SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
+    PSID AdministratorsGroup;
+    BOOL isAdmin = FALSE;
+
+    if (AllocateAndInitializeSid(&NtAuthority, 2, SECURITY_BUILTIN_DOMAIN_RID,
+        DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &AdministratorsGroup)) {
+        CheckTokenMembership(NULL, AdministratorsGroup, &isAdmin);
+        FreeSid(AdministratorsGroup);
+    }
+    return isAdmin;
+}
+
+// 窗口焦点处理函数
+bool EnsureTargetFocus(HWND hDlg) {
+    // 获取当前前景窗口
+    HWND hForeground = GetForegroundWindow();
+
+    // 如果已经是目标窗口且未启用强制聚焦
+    if (hForeground == g_hTargetWnd && !g_UseForceFocus)
+        return true;
+
+    // 使用更精确的窗口匹配算法
+    DWORD dwForegroundPID;
+    GetWindowThreadProcessId(hForeground, &dwForegroundPID);
+
+    // 检查窗口有效性
+    if (!IsWindowVisible(hForeground) || IsIconic(hForeground)) {
+        MessageBox(hDlg, L"目标窗口不可用\n错误描述：目标窗口不可见或最小化。", L"错误", MB_ICONERROR);
+        return false;
+    }
+
+    // 使用AttachThreadInput实现精确输入控制
+    DWORD dwCurrentThread = GetCurrentThreadId();
+    DWORD dwTargetThread = GetWindowThreadProcessId(hForeground, NULL);
+
+    if (dwCurrentThread != dwTargetThread) {
+        AttachThreadInput(dwCurrentThread, dwTargetThread, TRUE);
+    }
+
+    // 使用渐进式聚焦策略
+    SetWindowPos(hForeground, HWND_TOPMOST, 0, 0, 0, 0,
+        SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+    SetWindowPos(hForeground, HWND_NOTOPMOST, 0, 0, 0, 0,
+        SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+
+    // 发送扩展聚焦消息（绕过某些应用程序的限制）
+    SendMessageTimeout(hForeground, WM_MOUSEACTIVATE, 0, 0,
+        SMTO_NORMAL, 100, NULL);
+
+    // 使用低级别键盘事件触发聚焦
+    INPUT input[4] = { 0 };
+    input[0].type = INPUT_KEYBOARD;
+    input[0].ki.wVk = VK_MENU;
+    input[1].type = INPUT_KEYBOARD;
+    input[1].ki.wVk = VK_TAB;
+    input[2].type = INPUT_KEYBOARD;
+    input[2].ki.wVk = VK_TAB;
+    input[2].ki.dwFlags = KEYEVENTF_KEYUP;
+    input[3].type = INPUT_KEYBOARD;
+    input[3].ki.wVk = VK_MENU;
+    input[3].ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(4, input, sizeof(INPUT));
+
+    // 解除线程绑定
+    if (dwCurrentThread != dwTargetThread) {
+        AttachThreadInput(dwCurrentThread, dwTargetThread, FALSE);
+    }
+
+    return (GetForegroundWindow() == hForeground);
+}
+
+// 定时器处理函数
+VOID CALLBACK EnhancedTimerProc(HWND hwnd, UINT msg, UINT_PTR id, DWORD time) {
+    static bool bFocusEnsured = false;
+
+    // 首次尝试聚焦
+    if (!bFocusEnsured) {
+        if (!EnsureTargetFocus(GetParent(hwnd))) {
+            KillTimer(hwnd, id);
+            MessageBox(GetParent(hwnd), L"无法获取窗口焦点\n错误描述：你的程序不支持此工具。", L"错误", MB_ICONERROR);
+            return;
+        }
+        bFocusEnsured = true;
+    }
+
+    // 获取窗口实际位置（考虑DPI缩放）
+    RECT rcWindow;
+    if (!GetWindowRect(g_hTargetWnd, &rcWindow)) {
+        KillTimer(hwnd, id);
+        MessageBox(GetParent(hwnd), L"无法获取窗口尺寸\n错误描述：你的程序不支持此工具。", L"错误", MB_ICONERROR);
+        return;
+    }
+
+    // 生成智能点击坐标（避开边缘区域）
+    int x = rcWindow.left + (rcWindow.right - rcWindow.left) * 0.5;
+    int y = rcWindow.top + (rcWindow.bottom - rcWindow.top) * 0.5;
+
+    // 使用混合输入法发送事件
+    INPUT inputs[4] = { 0 };
+
+    // 鼠标按下
+    inputs[0].type = INPUT_MOUSE;
+    inputs[0].mi.dx = x * (65535 / GetSystemMetrics(SM_CXSCREEN));
+    inputs[0].mi.dy = y * (65535 / GetSystemMetrics(SM_CYSCREEN));
+    inputs[0].mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE;
+
+    inputs[1].type = INPUT_MOUSE;
+    inputs[1].mi.dwFlags = (g_CurrentClick == 1) ? MOUSEEVENTF_LEFTDOWN : MOUSEEVENTF_RIGHTDOWN;
+
+    // 鼠标释放
+    inputs[2].type = INPUT_MOUSE;
+    inputs[2].mi.dwFlags = (g_CurrentClick == 1) ? MOUSEEVENTF_LEFTUP : MOUSEEVENTF_RIGHTUP;
+
+    // 添加随机移动防止检测
+    inputs[3].type = INPUT_MOUSE;
+    inputs[3].mi.dx = (x + rand() % 5 - 2) * (65535 / GetSystemMetrics(SM_CXSCREEN));
+    inputs[3].mi.dy = (y + rand() % 5 - 2) * (65535 / GetSystemMetrics(SM_CYSCREEN));
+    inputs[3].mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE;
+
+    SendInput(4, inputs, sizeof(INPUT));
+}
 
 void LeftClick() {
     // 创建一个INPUT结构体用于发送鼠标事件
@@ -58,7 +183,7 @@ void RightClick() {
     SendInput(1, &input, sizeof(INPUT));
 }
 
-// 修改后的对话框消息处理函数
+// 对话框消息处理函数
 INT_PTR CALLBACK MainDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
@@ -73,11 +198,12 @@ INT_PTR CALLBACK MainDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
                 MAKEINTRESOURCE(IDD_ABOUTBOX),
                 hDlg, About);
             break;
-
+        case IDM_UPDATE:
+            ShellExecuteW(NULL, L"open", L"https://github.com/xystudio889/ClickMouse/releases/latest", NULL, NULL, SW_SHOWNORMAL);
+            break;
         case IDM_EXIT:
             SendMessage(hDlg, WM_CLOSE, 0, 0);
             break;
-
         case IDC_LEFT:   // 左键连点按钮
         case IDC_RIGHT:  // 右键连点按钮
         {
@@ -101,7 +227,7 @@ INT_PTR CALLBACK MainDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
             }
 
             if (!valid || wcslen(szInterval) == 0) {
-                MessageBox(hDlg, L"请输入有效的数字间隔", L"错误", MB_ICONERROR);
+                MessageBox(hDlg, L"请输入有效的数字间隔\n错误描述：你的程序不支持此工具。", L"错误", MB_ICONERROR);
                 return TRUE;
             }
 
@@ -113,7 +239,7 @@ INT_PTR CALLBACK MainDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
             g_CurrentClick = (wmId == IDC_LEFT) ? 1 : 2;
 
             // 启动定时器
-            g_TimerId = SetTimer(hDlg, 1, g_Interval, NULL);
+            g_TimerId = SetTimer(hDlg, 1, g_Interval, EnhancedTimerProc);  // 使用回调函数
             SetDlgItemText(hDlg, IDC_PAUSE, L"暂停");
             break;
         }
@@ -270,6 +396,12 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
     case WM_INITDIALOG:
+        // 启用DPI感知
+        SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+        // 申请管理员权限
+        if (!IsRunAsAdmin()) {
+            ShellExecute(NULL, L"runas", GetCommandLine(), NULL, NULL, SW_SHOWNORMAL);
+        }
         return (INT_PTR)TRUE;
 
     case WM_COMMAND:
@@ -278,9 +410,9 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             EndDialog(hDlg, LOWORD(wParam));
             return (INT_PTR)TRUE;
         }
-        else if (LOWORD(wParam) == IDUPDATE)
+        else if (LOWORD(wParam) == IDSTAR)
         {
-            ShellExecuteW(NULL, L"open", L"https://github.com/xystudio889/ClickMouse/releases/latest", NULL, NULL, SW_SHOWNORMAL);
+            ShellExecuteW(NULL, L"open", L"https://github.com/xystudio889/ClickMouse/", NULL, NULL, SW_SHOWNORMAL);
         }
         break;
     }

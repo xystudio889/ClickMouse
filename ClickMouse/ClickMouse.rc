@@ -35,6 +35,7 @@ BEGIN
     POPUP "帮助(&H)"
     BEGIN
         MENUITEM "关于(&A)",                      IDM_ABOUT
+        MENUITEM "更新(&U)",                      IDM_UPDATE
     END
     MENUITEM "退出(&X)",                      IDM_EXIT
 END
@@ -57,15 +58,17 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 170, 55
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_ABOUTBOX DIALOGEX 0, 0, 157, 106
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "关于 Clickmouse"
-FONT 9, "MS Shell Dlg", 0, 0, 0x1
+FONT 10, "Microsoft Sans Serif", 400, 0, 0x0
 BEGIN
-    ICON            IDI_CLICKMOUSE,IDC_STATIC,14,14,20,20
-    DEFPUSHBUTTON   "确定",IDOK,113,34,50,14,WS_GROUP
-    LTEXT           "Clickmouse 1.0.0.0",IDC_STATIC,38,17,114,8
-    DEFPUSHBUTTON   "更新",IDUPDATE,41,34,50,14
+    ICON            IDI_CLICKMOUSE,IDC_STATIC,14,14,16,16
+    DEFPUSHBUTTON   "确定",IDOK,100,85,50,14,WS_GROUP
+    LTEXT           "Clickmouse,版本1.0.1.0",IDC_STATIC,36,17,114,8
+    LTEXT           "一款轻便、快捷，使用C++制作的鼠标连点器",IDC_STATIC,31,38,119,18
+    DEFPUSHBUTTON   "支持作者",IDSTAR,7,85,50,14
+    LTEXT           "本软件完全开源，作者为xystudio。建议前往项目地址来个star！",IDC_STATIC,7,65,143,17
 END
 
 IDD_MAIN_WINDOW DIALOGEX 0, 0, 300, 150
@@ -94,9 +97,9 @@ BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 163
+        RIGHTMARGIN, 150
         TOPMARGIN, 7
-        BOTTOMMARGIN, 48
+        BOTTOMMARGIN, 99
     END
 
     IDD_MAIN_WINDOW, DIALOG
@@ -146,8 +149,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,0
- PRODUCTVERSION 1,0,0,0
+ FILEVERSION 1,0,1,1
+ PRODUCTVERSION 1,0,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -164,11 +167,11 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "xystudio"
             VALUE "FileDescription", "鼠标连点器"
-            VALUE "FileVersion", "1.0.0.0"
+            VALUE "FileVersion", "1.0.1.1"
             VALUE "InternalName", "Clickmouse.exe"
             VALUE "OriginalFilename", "Clickmouse.exe"
-            VALUE "ProductName", "TODO: Clickmouse"
-            VALUE "ProductVersion", "1.0.0.0"
+            VALUE "ProductName", "Clickmouse"
+            VALUE "ProductVersion", "1.0.1.0"
         END
     END
     BLOCK "VarFileInfo"

@@ -13,13 +13,15 @@
 #define IDR_MAINFRAME                   128
 #define IDD_MAIN_WINDOW                 141
 #define IDI_ICON1                       142
-#define IDUPDATE                        1001
 #define IDC_RIGHT                       1002
+#define IDSTAR                          1002
 #define IDC_DELAY_TEXT                  1003
 #define IDC_LEFT                        1004
 #define IDC_DELAY_INPUT_BOX             1005
 #define IDC_PAUSE                       1006
 #define IDC_STOP                        1007
+#define IDM_UPDATE                      32776
+#define IDM_UPDATE_LOG                  32779
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -28,8 +30,8 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        143
-#define _APS_NEXT_COMMAND_VALUE         32775
-#define _APS_NEXT_CONTROL_VALUE         1006
+#define _APS_NEXT_COMMAND_VALUE         32780
+#define _APS_NEXT_CONTROL_VALUE         1008
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif
