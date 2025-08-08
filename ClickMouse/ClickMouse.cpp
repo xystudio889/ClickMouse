@@ -25,6 +25,7 @@ ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK    UpdateLog(HWND, UINT, WPARAM, LPARAM);
 
 bool IsRunAsAdmin() {
     SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
@@ -201,6 +202,10 @@ INT_PTR CALLBACK MainDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
         case IDM_UPDATE:
             ShellExecuteW(NULL, L"open", L"https://github.com/xystudio889/ClickMouse/releases/latest", NULL, NULL, SW_SHOWNORMAL);
             break;
+        case IDM_UPDATE_LOG:
+            DialogBox(GetModuleHandle(NULL),
+                MAKEINTRESOURCE(IDD_UPDATE_LOG),
+                hDlg, UpdateLog);
         case IDM_EXIT:
             SendMessage(hDlg, WM_CLOSE, 0, 0);
             break;
@@ -413,6 +418,31 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         else if (LOWORD(wParam) == IDSTAR)
         {
             ShellExecuteW(NULL, L"open", L"https://github.com/xystudio889/ClickMouse/", NULL, NULL, SW_SHOWNORMAL);
+        }
+        break;
+    }
+    return (INT_PTR)FALSE;
+}
+
+// “更新日志”框的消息处理程序。
+INT_PTR CALLBACK UpdateLog(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    UNREFERENCED_PARAMETER(lParam);
+    switch (message)
+    {
+    case WM_INITDIALOG:
+        // 启用DPI感知
+        SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+        return (INT_PTR)TRUE;
+
+    case WM_COMMAND:
+        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+        {
+            EndDialog(hDlg, LOWORD(wParam));
+            return (INT_PTR)TRUE;
+        }
+        else if (LOWORD(wParam) == IDSHOW_MORE_UPDATE_LOG) {
+            ShellExecuteW(NULL, L"open", L"https://github.com/xystudio889/ClickMouse/releases/", NULL, NULL, SW_SHOWNORMAL);
         }
         break;
     }
