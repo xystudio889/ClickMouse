@@ -5,6 +5,7 @@
 #define RIGHT 0x0008
 #define LEFT 0x0002
 #define INFINITE -1
+#define CLICKMOUSE_VERSION 0x0003
 
 void MouseClick(unsigned int MouseButton, unsigned int delay, int times = 1) {
     if (MouseButton!= RIGHT && MouseButton!= LEFT) {

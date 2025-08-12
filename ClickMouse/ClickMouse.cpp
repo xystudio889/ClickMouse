@@ -206,6 +206,7 @@ INT_PTR CALLBACK MainDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
             DialogBox(GetModuleHandle(NULL),
                 MAKEINTRESOURCE(IDD_UPDATE_LOG),
                 hDlg, UpdateLog);
+            break;
         case IDM_EXIT:
             SendMessage(hDlg, WM_CLOSE, 0, 0);
             break;
@@ -232,7 +233,7 @@ INT_PTR CALLBACK MainDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
             }
 
             if (!valid || wcslen(szInterval) == 0) {
-                MessageBox(hDlg, L"请输入有效的数字间隔\n错误描述：你的程序不支持此工具。", L"错误", MB_ICONERROR);
+                MessageBox(hDlg, L"请输入有效的数字间隔", L"错误", MB_ICONERROR);
                 return TRUE;
             }
 
@@ -433,6 +434,10 @@ INT_PTR CALLBACK UpdateLog(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam
     case WM_INITDIALOG:
         // 启用DPI感知
         SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+        // 申请管理员权限
+        if (!IsRunAsAdmin()) {
+            ShellExecute(NULL, L"runas", GetCommandLine(), NULL, NULL, SW_SHOWNORMAL);
+        }
         return (INT_PTR)TRUE;
 
     case WM_COMMAND:
@@ -441,8 +446,9 @@ INT_PTR CALLBACK UpdateLog(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam
             EndDialog(hDlg, LOWORD(wParam));
             return (INT_PTR)TRUE;
         }
-        else if (LOWORD(wParam) == IDSHOW_MORE_UPDATE_LOG) {
-            ShellExecuteW(NULL, L"open", L"https://github.com/xystudio889/ClickMouse/releases/", NULL, NULL, SW_SHOWNORMAL);
+        else if (LOWORD(wParam) == IDSHOW_MORE_UPDATE_LOG)
+        {
+            ShellExecuteW(NULL, L"open", L"https://github.com/xystudio889/ClickMouse/releases", NULL, NULL, SW_SHOWNORMAL);
         }
         break;
     }

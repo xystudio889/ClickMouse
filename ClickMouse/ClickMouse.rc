@@ -64,11 +64,11 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "关于 Clickmouse"
 FONT 10, "Microsoft Sans Serif", 400, 0, 0x0
 BEGIN
-    ICON            IDI_CLICKMOUSE,IDC_STATIC,14,14,16,16
+    ICON            IDI_CLICKMOUSE,IDC_STATIC,14,14,20,20
     DEFPUSHBUTTON   "确定",IDOK,100,85,50,14,WS_GROUP
-    LTEXT           "Clickmouse,版本1.0.1.0",IDC_STATIC,36,17,114,8
+    LTEXT           "Clickmouse,版本1.0.2.3",IDC_STATIC,36,17,114,8
     LTEXT           "一款轻便、快捷，使用C++制作的鼠标连点器",IDC_STATIC,31,38,119,18
-    DEFPUSHBUTTON   "支持作者",IDSTAR,7,85,50,14
+    PUSHBUTTON      "支持作者",IDSTAR,7,85,50,14
     LTEXT           "本软件完全开源，作者为xystudio。建议前往项目地址来个star！",IDC_STATIC,7,65,143,17
 END
 
@@ -86,20 +86,22 @@ BEGIN
     EDITTEXT        IDC_DELAY_INPUT_BOX,120,110,140,15,ES_CENTER | ES_AUTOHSCROLL
 END
 
-IDD_UPDATE_LOG DIALOGEX 0, 0, 205, 162
+IDD_UPDATE_LOG DIALOGEX 0, 0, 205, 193
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "更新日志"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "确定",IDOK,148,141,50,14
-    DEFPUSHBUTTON   "更多日志",IDSHOW_MORE_UPDATE_LOG,37,141,50,14
+    DEFPUSHBUTTON   "确定",IDOK,148,172,50,14
+    PUSHBUTTON      "更多日志",IDSHOW_MORE_UPDATE_LOG,37,172,50,14
     LTEXT           "2025/08/03    v1.0.0.0",IDC_STATIC,7,7,80,8
     LTEXT           "ClickMouse上线",IDC_STATIC,7,18,191,8
     LTEXT           "2025/08/03    v1.0.1.0",IDC_STATIC,7,32,80,8
     LTEXT           "对'关于'界面更新：\n\t·添加了""支持作者""按钮\n\t移动'更新按钮'到主窗口的'帮助'菜单\n添加了找不到焦点提示",IDC_STATIC,7,43,191,40
     LTEXT           "2025/08/03    v1.0.2.0",IDC_STATIC,7,82,80,8
     LTEXT           "添加了“更新日志”界面",IDC_STATIC,7,94,191,8
-    LTEXT           "目前最多显示5个更新日志，更多更新日志请查阅github releases.",IDC_STATIC,7,117,191,17
+    LTEXT           "目前最多显示5个更新日志，更多更新日志请查阅github releases.",IDC_STATIC,7,147,191,17
+    LTEXT           "2025/08/03    v1.0.2.3",IDC_STATIC,7,109,80,8
+    LTEXT           "修改了部分显示字符\n修复了当关闭""更新日志""时，主窗口一并关闭的问题",IDC_STATIC,7,121,191,19
 END
 
 
@@ -131,7 +133,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 198
         TOPMARGIN, 7
-        BOTTOMMARGIN, 155
+        BOTTOMMARGIN, 186
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -174,8 +176,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,2,2
- PRODUCTVERSION 1,0,2,0
+ FILEVERSION 1,0,2,3
+ PRODUCTVERSION 1,0,2,3
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -192,11 +194,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "xystudio"
             VALUE "FileDescription", "鼠标连点器"
-            VALUE "FileVersion", "1.0.2.2"
+            VALUE "FileVersion", "1.0.2.3"
             VALUE "InternalName", "Clickmouse.exe"
+            VALUE "LegalCopyright", "©xystudio"
             VALUE "OriginalFilename", "Clickmouse.exe"
             VALUE "ProductName", "Clickmouse"
-            VALUE "ProductVersion", "1.0.2.0"
+            VALUE "ProductVersion", "1.0.2.3"
         END
     END
     BLOCK "VarFileInfo"
